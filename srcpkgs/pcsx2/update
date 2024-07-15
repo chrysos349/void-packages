@@ -1,0 +1,2 @@
+site=https://github.com/PCSX2/pcsx2/releases/latest
+pattern=">v\K.+(?=</h1>)"

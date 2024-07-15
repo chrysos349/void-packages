@@ -1,0 +1,46 @@
+# Template file for 'pcsx2'
+pkgname=pcsx2
+version=2.1.27
+revision=1
+archs="x86_64*"
+build_style=cmake
+configure_args="-DCMAKE_BUILD_TYPE=Release -DUSE_BACKTRACE=OFF
+ -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON
+ -DCMAKE_EXE_LINKER_FLAGS_INIT=-fuse-ld=lld
+ -DCMAKE_MODULE_LINKER_FLAGS_INIT=-fuse-ld=lld
+ -DCMAKE_MODULE_LINKER_FLAGS_INIT=-fuse-ld=lld
+ -DUSE_LINKED_FFMPEG=ON -DDISABLE_ADVANCE_SIMD=TRUE"
+hostmakedepends="clang extra-cmake-modules lld llvm pkg-config qt6-base
+ qt6-tools shaderc"
+makedepends="SDL2-devel ffmpeg-devel freetype-devel libcurl-devel
+ libjpeg-turbo-devel liblz4-devel libpcap-devel libpng-devel libwebp-devel
+ libzstd-devel qt6-base-devel zlib-devel"
+short_desc="Playstation 2 Emulator"
+maintainer="chrysos349 <chrysostom349@gmail.com>"
+license="GPL-3.0-or-later"
+homepage="https://pcsx2.net"
+changelog="https://github.com/PCSX2/pcsx2/releases"
+distfiles="https://github.com/PCSX2/pcsx2/archive/refs/tags/v${version}.tar.gz
+ https://github.com/PCSX2/pcsx2_patches/releases/download/latest/patches.zip"
+checksum="9e2e838cc117d1eeee5dc8c0a446609e36f3ccf4dee0bc4cca7d3e8f4588f17e
+ b05ae12bcd1632103ed76f43fb003eaa633897c2cd789713e675d752e99860a1"
+skip_extraction="patches.zip"
+
+pre_configure() {
+	export CC=clang
+	export CXX=clang++
+	export AR=llvm-ar
+}
+
+pre_build() {
+	vsed -i build/common/include/svnrev.h -e "s/Unknown/v${version}/"
+}
+
+do_install() {
+	vsrccopy patches.zip build/bin/resources
+	cp -r build/bin ${DESTDIR}/usr
+	vinstall build/bin/resources/icons/AppIconLarge.png 644 \
+		usr/share/icons/hicolor/512x512/apps PCSX2.png
+	vinstall .github/workflows/scripts/linux/pcsx2-qt.desktop 644 \
+		usr/share/applications
+}
